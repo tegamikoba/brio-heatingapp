@@ -1,0 +1,1054 @@
+<!doctype html>
+<html lang="ja" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>加熱記録管  </title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script async src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+    .fade-in {
+      animation: fadeIn 0.3s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .pulse-dot {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+  </style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <style>@view-transition { navigation: auto; }</style>
+ 
+<link rel="manifest" href="manifest.json">
+<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js");
+  }
+</script>
+</head>
+ <body class="h-full bg-slate-900 text-slate-100">
+  <div id="app" class="h-full w-full overflow-auto">
+   <div class="min-h-full p-4 md:p-6 max-w-4xl mx-auto"><!-- Header -->
+    <header class="mb-6">
+     <div class="flex items-center gap-3 mb-2">
+      <div class="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center">
+       <svg class="w-6 h-6 text-slate-900" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" /> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
+       </svg>
+      </div>
+      <div>
+       <h1 id="app-title" class="text-xl md:text-2xl font-bold text-amber-400">加熱記録管理</h1>
+       <p id="shop-name" class="text-sm text-slate-400">〇〇ミートファクトリー</p>
+      </div>
+     </div>
+    </header><!-- Tabs -->
+    <div class="flex gap-6 border-b border-slate-700 mb-6"><button id="tab-recording" class="pb-3 font-medium transition-colors border-b-2 border-amber-500 text-amber-400">
+      <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg> 加熱記録 </button> <button id="tab-products" class="pb-3 font-medium transition-colors border-b-2 border-transparent text-slate-400">
+      <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+      </svg> 製品管理 </button> <button id="tab-operators" class="pb-3 font-medium transition-colors border-b-2 border-transparent text-slate-400">
+      <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3.6a1.6 1.6 0 01-1.6-1.6V5.6a1.6 1.6 0 011.6-1.6h10.8a1.6 1.6 0 011.6 1.6v12.8a1.6 1.6 0 01-1.6 1.6zm6-6h-3m0 0h-3m3 0v3m0-3v-3" />
+      </svg> 担当者管理 </button>
+    </div><!-- Recording Section -->
+    <div id="recording-section">
+     <section class="bg-slate-800 rounded-xl p-4 md:p-6 mb-6 border border-slate-700">
+      <h2 class="text-lg font-semibold mb-4 flex items-center gap-2"><span class="w-2 h-2 bg-amber-500 rounded-full pulse-dot"></span> 新   加熱記録</h2>
+      <form id="record-form" class="space-y-4">
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+         <label for="product-select" class="block text-sm font-medium text-slate-300 mb-1">製品名</label> <select id="product-select" required class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-white"> <option value="">製品名を選択してください</option> </select>
+        </div>
+        <div>
+         <label for="operator-select" class="block text-sm font-medium text-slate-300 mb-1">担当者</label> <select id="operator-select" required class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-white"> <option value="">担当者を選択してください</option> </select>
+        </div>
+       </div>
+       <div>
+        <label for="raw-material-id" class="block text-sm font-medium text-slate-300 mb-1">原料ID登録（QRコード読取）</label>
+        <div class="flex gap-2"><input type="text" id="raw-material-id" required pattern="[a-zA-Z0-9]+" class="flex-1 px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-white placeholder-slate-400 uppercase" placeholder="例: MAT001" readonly> <button type="button" id="qr-scan-btn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2 whitespace-nowrap">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg> QR読取 </button>
+        </div>
+       </div>
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+         <label for="pack-count" class="block text-sm font-medium text-slate-300 mb-1">  パック数（半角数字）</label> <input type="number" id="pack-count" required min="1" max="9999" step="1" class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-white placeholder-slate-400" placeholder="例: 100">
+        </div>
+        <div>
+         <label for="expiration-date" class="block text-sm font-medium text-slate-300 mb-1">賞味期限</label> <input type="date" id="expiration-date" required class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-white">
+        </div>
+       </div>
+       <div class="bg-slate-700/50 rounded-lg p-4">
+        <h3 class="text-sm font-medium text-slate-300 mb-3">基準値（クリアすべき条件）</h3>
+        <div class="grid grid-cols-2 gap-4">
+         <div>
+          <label for="target-temp" class="block text-sm text-slate-400 mb-1">基準温度（℃以上）</label> <input type="number" id="target-temp" readonly class="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white cursor-not-allowed opacity-75">
+         </div>
+         <div>
+          <label for="target-time" class="block text-sm text-slate-400 mb-1">基準時間（分以上）</label> <input type="number" id="target-time" readonly class="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white cursor-not-allowed opacity-75">
+         </div>
+        </div>
+       </div>
+       <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
+        <h3 class="text-sm font-medium text-amber-400 mb-3">測定値</h3>
+        <div class="grid grid-cols-2 gap-4">
+         <div>
+          <label for="actual-temp" class="block text-sm text-slate-300 mb-1">実測温度（℃）</label> <input type="number" id="actual-temp" required min="0" max="300" step="0.1" class="w-full px-3 py-2 bg-slate-700 border border-amber-500/50 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-white text-lg font-semibold" placeholder="0.0">
+         </div>
+         <div>
+          <label for="actual-time" class="block text-sm text-slate-300 mb-1">実測     （分）</label> <input type="number" id="actual-time" required min="0" max="999" step="1" class="w-full px-3 py-2 bg-slate-700 border border-amber-500/50 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-white text-lg font-semibold" placeholder="0">
+         </div>
+        </div>
+       </div>
+       <div id="form-message" class="hidden"></div><button type="submit" id="submit-btn" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg> 記録を保存 </button>
+      </form>
+     </section>
+     <section class="bg-slate-800 rounded-xl p-4 md:p-6 border border-slate-700">
+      <div class="flex items-center justify-between mb-4">
+       <h2 class="text-lg font-semibold flex items-center gap-2">
+        <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg> 加熱記録一覧</h2>
+       <div class="flex items-center gap-3">
+        <span id="record-count" class="text-sm text-slate-400">0件</span> <button onclick="openShareMenu()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-amber-400 text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5">
+         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+         </svg> 共有 </button>
+       </div>
+      </div>
+      <div id="records-container">
+       <div id="empty-state" class="text-center py-12 text-slate-400">
+        <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <p>まだ記録がありません</p>
+        <p class="text-sm mt-1">上のフォームから加熱記録を追加してください</p>
+       </div>
+       <div id="records-list" class="space-y-3"></div>
+      </div>
+     </section>
+    </div><!-- Products Section -->
+    <div id="products-section" class="hidden">
+     <section class="bg-slate-800 rounded-xl p-4 md:p-6 mb-6 border border-slate-700">
+      <h2 class="text-lg font-semibold mb-4 flex items-center gap-2"><span class="w-2 h-2 bg-blue-500 rounded-full pulse-dot"></span> 新規製品登録</h2>
+      <form id="product-form" class="space-y-4">
+       <div>
+        <label for="new-product-name" class="block text-sm font-medium text-slate-300 mb-1">製品名</label> <input type="text" id="new-product-name" required class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-slate-400" placeholder="例: ミートローフ">
+       </div>
+       <div class="grid grid-cols-2 gap-4">
+        <div>
+         <label for="new-target-temp" class="block text-sm font-medium text-slate-300 mb-1">基準温度（℃以上）</label> <input type="number" id="new-target-temp" required min="0" max="300" step="0.1" value="75" class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white">
+        </div>
+        <div>
+         <label for="new-target-time" class="block text-sm font-medium text-slate-300 mb-1">基準時間（分以上）</label> <input type="number" id="new-target-time" required min="0" max="999" step="1" value="1" class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white">
+        </div>
+       </div>
+       <div id="product-form-message" class="hidden"></div><button type="submit" id="product-submit-btn" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg> 製品を登録 </button>
+      </form>
+     </section>
+     <section class="bg-slate-800 rounded-xl p-4 md:p-6 border border-slate-700">
+      <div class="flex items-center justify-between mb-4">
+       <h2 class="text-lg font-semibold flex items-center gap-2">
+        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg> 登録済  製品一覧</h2><span id="product-count" class="text-sm text-slate-400">0件</span>
+      </div>
+      <div id="products-container">
+       <div id="products-empty-state" class="text-center py-12 text-slate-400">
+        <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+        </svg>
+        <p>まだ製品が登   されていません</p>
+        <p class="text-sm mt-1">   の  ォームから製品を登録してください</p>
+       </div>
+       <div id="products-list" class="space-y-3"></div>
+      </div>
+     </section>
+    </div><!-- Operators Section -->
+    <div id="operators-section" class="hidden">
+     <section class="bg-slate-800 rounded-xl p-4 md:p-6 mb-6 border border-slate-700">
+      <h2 class="text-lg font-semibold mb-4 flex items-center gap-2"><span class="w-2 h-2 bg-purple-500 rounded-full pulse-dot"></span> 新規担当者   録</h2>
+      <form id="operator-form" class="space-y-4">
+       <div>
+        <label for="new-operator-name" class="block text-sm font-medium text-slate-300 mb-1">担当者名</label> <input type="text" id="new-operator-name" required class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-slate-400" placeholder="例: 山田太郎">
+       </div>
+       <div id="operator-form-message" class="hidden"></div><button type="submit" id="operator-submit-btn" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg> 担当者     登録 </button>
+      </form>
+     </section>
+     <section class="bg-slate-800 rounded-xl p-4 md:p-6 border border-slate-700">
+      <div class="flex items-center justify-between mb-4">
+       <h2 class="text-lg font-semibold flex items-center gap-2">
+        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3.6a1.6 1.6 0 01-1.6-1.6V5.6a1.6 1.6 0 011.6-1.6h10.8a1.6 1.6 0 011.6 1.6v12.8a1.6 1.6 0 01-1.6 1.6zm6-6h-3m0 0h-3m3 0v3m0-3v-3" />
+        </svg> 登録済   担当者一覧</h2><span id="operator-count" class="text-sm text-slate-400">0件</span>
+      </div>
+      <div id="operators-container">
+       <div id="operators-empty-state" class="text-center py-12 text-slate-400">
+        <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.856-1.487M15 20H9m8-4v2m0-6V9m-3 3H9m3 0h3m-3 0V7m0 6h3m-6 0h-3m3 0v2m0-6V9" />
+        </svg>
+        <p>     だ担当者が登録されていません</p>
+        <p class="text-sm mt-1">上のフォームから担当者を登録      ださい</p>
+       </div>
+       <div id="operators-list" class="space-y-3"></div>
+      </div>
+     </section>
+    </div>
+    <footer class="mt-6 text-center text-sm text-slate-500">
+     <p>※ 食品衛生法に基    加熱記録管理</p>
+    </footer>
+   </div>
+  </div><!-- Delete Modals -->
+  <div id="delete-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+   <div class="bg-slate-800 rounded-xl p-6 max-w-sm w-full border border-slate-700">
+    <h3 class="text-lg font-semibold mb-2">記録を  除</h3>
+    <p class="text-slate-400 mb-4">この加熱記録を削除してもよろしいですか？</p>
+    <div class="flex gap-3">
+     <button id="cancel-delete" class="flex-1 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors">キャンセル</button> <button id="confirm-delete" class="flex-1 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors">削除する</button>
+    </div>
+   </div>
+  </div>
+  <div id="delete-product-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+   <div class="bg-slate-800 rounded-xl p-6 max-w-sm w-full border border-slate-700">
+    <h3 class="text-lg font-semibold mb-2">製品を削除</h3>
+    <p class="text-slate-400 mb-4">この製品を  除してもよろしいですか？</p>
+    <div class="flex gap-3">
+     <button id="cancel-delete-product" class="flex-1 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors">キャンセル</button> <button id="confirm-delete-product" class="flex-1 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors">削除する</button>
+    </div>
+   </div>
+  </div>
+  <div id="delete-operator-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+   <div class="bg-slate-800 rounded-xl p-6 max-w-sm w-full border border-slate-700">
+    <h3 class="text-lg font-semibold mb-2">担当者を削除</h3>
+    <p class="text-slate-400 mb-4">この担当者を削除してもよろしいですか？</p>
+    <div class="flex gap-3">
+     <button id="cancel-delete-operator" class="flex-1 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors">キャンセル</button> <button id="confirm-delete-operator" class="flex-1 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors">削除する</button>
+    </div>
+   </div>
+  </div><!-- QR Scanner Modal -->
+  <div id="qr-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+   <div class="bg-slate-800 rounded-xl p-6 max-w-sm w-full border border-slate-700 fade-in">
+    <h3 class="text-lg font-semibold mb-4">QRコード読取</h3>
+    <div class="relative w-full aspect-square bg-black rounded-lg overflow-hidden mb-4">
+     <video id="qr-video" class="w-full h-full object-cover" playsinline></video>
+     <div class="absolute inset-0 border-2 border-amber-400">
+      <div class="absolute top-1/4 left-1/4 w-1/2 h-1/2 border-2 border-amber-400 rounded-lg"></div>
+     </div>
+    </div>
+    <div id="qr-status" class="text-center text-sm text-slate-400 mb-4">
+     カメラ   準備中...
+    </div><button type="button" onclick="closeQRScanner()" class="w-full py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">キャンセル</button>
+   </div>
+  </div><!-- Share Menu Modal -->
+  <div id="share-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+   <div class="bg-slate-800 rounded-xl p-6 max-w-sm w-full border border-slate-700 fade-in">
+    <h3 class="text-lg font-semibold mb-4">記録データ  共有</h3>
+    <div class="space-y-3"><button onclick="copyCSVToClipboard()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      </svg> クリップボードに  ピー </button> <button onclick="downloadCSV()" class="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+      </svg> CSVをダウンロード </button> <button onclick="shareViaText()" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C9.589 12.430 10 11.129 10 9.5 10 5.358 7.239 2 3.5 2S-3 5.358-3 9.5 0.239 17 3.5 17c1.6 0 3.042-.583 4.233-1.592m0 0l3.769 3.868c1.735 1.348 4.518.192 5.143-2.078l1.314-4.71c.211-.752-.06-1.556-.609-2.105L17.611 8.3" />
+      </svg> テキスト形式で共有 </button>
+    </div><button onclick="closeShareMenu()" class="w-full mt-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">キャンセル</button>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      app_title: '加熱記録管理',
+      shop_name: '〇〇ミートファクトリー'
+    };
+
+    let records = [];
+    let products = [];
+    let operators = [];
+    let recordToDelete = null;
+    let productToDelete = null;
+    let operatorToDelete = null;
+    let isSubmitting = false;
+    let qrScannerActive = false;
+    let qrStreamHandler = null;
+
+    // Toast notification
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `fixed bottom-4 right-4 px-4 py-3 rounded-lg text-white font-medium z-40 fade-in ${
+        type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-blue-600'
+      }`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // QR Scanner Functions
+    function openQRScanner() {
+      const modal = document.getElementById('qr-modal');
+      const video = document.getElementById('qr-video');
+      const status = document.getElementById('qr-status');
+      
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      qrScannerActive = true;
+      status.textContent = 'カメラへのアクセスをリクエスト中...';
+
+      // jsQR ライブラリが読み込まれているか確認
+      if (typeof jsQR === 'undefined') {
+        status.textContent = 'QR スキャンライブラリを読み込み中...';
+        return;
+      }
+
+      const constraints = {
+        video: {
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
+        audio: false
+      };
+
+      navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => {
+          video.srcObject = stream;
+          qrStreamHandler = stream;
+          video.play().catch(err => {
+            console.error('ビデオ再生エラー:', err);
+            status.textContent = 'ビデオ再生に失敗しました';
+          });
+          
+          status.textContent = 'QRコードをカメラに向けてください';
+          
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          let lastScanTime = 0;
+          
+          const scanQR = () => {
+            if (!qrScannerActive) {
+              stream.getTracks().forEach(track => track.stop());
+              return;
+            }
+            
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+              try {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+                
+                if (code) {
+                  const now = Date.now();
+                  // 同じコードを連続読取しないようにする（500ms の間隔）
+                  if (now - lastScanTime > 500) {
+                    const qrData = code.data.toUpperCase();
+                    const sanitized = qrData.replace(/[^A-Z0-9]/g, '');
+                    if (sanitized) {
+                      lastScanTime = now;
+                      document.getElementById('raw-material-id').value = sanitized;
+                      closeQRScanner();
+                      showToast(`QRコード読取成功: ${sanitized}`);
+                      return;
+                    }
+                  }
+                }
+              } catch (e) {
+                console.error('QR スキャンエラー:', e);
+              }
+            }
+            
+            requestAnimationFrame(scanQR);
+          };
+          
+          scanQR();
+        })
+        .catch(err => {
+          console.error('カメラアクセスエラー:', err);
+          let errorMessage = 'カメラにアクセスできません';
+          
+          if (err.name === 'NotAllowedError') {
+            errorMessage = 'カメラのアクセス権限が拒否されました。\nスマホの設定を確認してください。';
+          } else if (err.name === 'NotFoundError') {
+            errorMessage = 'カメラが見つかりません';
+          } else if (err.name === 'NotReadableError') {
+            errorMessage = 'カメラが使用中です';
+          } else if (err.name === 'SecurityError') {
+            errorMessage = 'セキュリティ上の理由でカメラにアクセスできません。\nHTTPS 接続を使用してください。';
+          }
+          
+          status.textContent = errorMessage;
+          showToast(errorMessage, 'error');
+        });
+    }
+
+    function closeQRScanner() {
+      qrScannerActive = false;
+      const modal = document.getElementById('qr-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      
+      if (qrStreamHandler) {
+        qrStreamHandler.getTracks().forEach(track => track.stop());
+        qrStreamHandler = null;
+      }
+      
+      const video = document.getElementById('qr-video');
+      video.srcObject = null;
+    }
+
+    // Element SDK initialization
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: async (config) => {
+          document.getElementById('app-title').textContent = config.app_title || defaultConfig.app_title;
+          document.getElementById('shop-name').textContent = config.shop_name || defaultConfig.shop_name;
+        },
+        mapToCapabilities: () => ({
+          recolorables: [],
+          borderables: [],
+          fontEditable: undefined,
+          fontSizeable: undefined
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ['app_title', config.app_title || defaultConfig.app_title],
+          ['shop_name', config.shop_name || defaultConfig.shop_name]
+        ])
+      });
+    }
+
+    // LocalStorage functions
+    function loadData() {
+      try {
+        const recordsData = localStorage.getItem('heating_records');
+        const productsData = localStorage.getItem('products');
+        const operatorsData = localStorage.getItem('operators');
+        
+        records = recordsData ? JSON.parse(recordsData) : [];
+        products = productsData ? JSON.parse(productsData) : [];
+        operators = operatorsData ? JSON.parse(operatorsData) : [];
+        
+        renderRecords();
+        renderProducts();
+        renderOperators();
+        updateProductSelect();
+        updateOperatorSelect();
+      } catch (e) {
+        console.error('デ   タ読み込みエ  ー:', e);
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem('heating_records', JSON.stringify(records));
+      localStorage.setItem('products', JSON.stringify(products));
+      localStorage.setItem('operators', JSON.stringify(operators));
+    }
+
+    // CSV Export Functions
+    function generateCSV() {
+      const headers = ['日時', '製品ID', '製品名', '原   ID', '担当者', '基準温度', '   測温度', '基準時間', '実測時間', '温度判定', '時間判定', '合格判定'];
+      
+      const rows = records.map(record => {
+        const product = products.find(p => p.id === record.productId);
+        const tempPass = record.actualTemp >= product.targetTemp ? '合格' : '不合格';
+        const timePass = record.actualTime >= product.targetTime ? '合格' : '不合格';
+        const overallPass = tempPass === '合格' && timePass === '合格' ? '合格' : '不合格';
+        
+        return [
+          record.timestamp,
+          product ? product.id : '-',
+          product ? product.name : '不明',
+          record.rawMaterialId,
+          record.operator,
+          product ? product.targetTemp : '-',
+          record.actualTemp,
+          product ? product.targetTime : '-',
+          record.actualTime,
+          tempPass,
+          timePass,
+          overallPass
+        ];
+      });
+
+      const csv = [
+        headers.join(','),
+        ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+      ].join('\n');
+
+      return csv;
+    }
+
+    function openShareMenu() {
+      if (records.length === 0) {
+        showToast('共有するデータがありません', 'error');
+        return;
+      }
+      document.getElementById('share-modal').classList.remove('hidden');
+      document.getElementById('share-modal').classList.add('flex');
+    }
+
+    function closeShareMenu() {
+      document.getElementById('share-modal').classList.add('hidden');
+      document.getElementById('share-modal').classList.remove('flex');
+    }
+
+    function copyCSVToClipboard() {
+      const csv = generateCSV();
+      navigator.clipboard.writeText(csv).then(() => {
+        showToast('CSVをクリップボードにコピーしました');
+        closeShareMenu();
+      }).catch(() => {
+        showToast('コピーに失敗しまし   ', 'error');
+      });
+    }
+
+    function downloadCSV() {
+      try {
+        const csv = generateCSV();
+        const timestamp = new Date().toISOString().slice(0, 10);
+        const filename = `   熱記録_${timestamp}.csv`;
+        
+        // BOM付きCSVを作  
+        const BOM = '\uFEFF';
+        const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8' });
+        
+        // データURLを   成
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.style.display = 'none';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // メモリ解放
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+        
+        showToast(`${filename} をダウンロードしました`);
+        closeShareMenu();
+      } catch (e) {
+        console.error('ダウンロード失敗:', e);
+        showToast('ダウンロードに失敗しました', 'error');
+      }
+    }
+
+    function shareViaText() {
+      try {
+        const csv = generateCSV();
+        const text = `【加熱記録データ】\n\n${csv}`;
+        
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('テキスト形  でクリップボードにコピーしました');
+          closeShareMenu();
+        }).catch(() => {
+          // フォールバック：テキストエリアに表示
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.select();
+          
+          try {
+            document.execCommand('copy');
+            showToast('  キスト形式でクリップボードにコピーしました');
+          } catch (err) {
+            showToast('コピーできませんでした。  動でコピーしてください', 'error');
+          }
+          
+          document.body.removeChild(textarea);
+          closeShareMenu();
+        });
+      } catch (e) {
+        console.error('共有失敗:', e);
+        showToast('共有に失敗しました', 'error');
+      }
+    }
+
+    // Tab Navigation
+    document.getElementById('tab-recording').addEventListener('click', () => {
+      document.getElementById('recording-section').classList.remove('hidden');
+      document.getElementById('products-section').classList.add('hidden');
+      document.getElementById('operators-section').classList.add('hidden');
+      document.getElementById('tab-recording').classList.remove('text-slate-400', 'border-transparent');
+      document.getElementById('tab-recording').classList.add('text-amber-400', 'border-amber-500');
+      document.getElementById('tab-products').classList.add('text-slate-400', 'border-transparent');
+      document.getElementById('tab-products').classList.remove('text-blue-400', 'border-blue-500');
+      document.getElementById('tab-operators').classList.add('text-slate-400', 'border-transparent');
+      document.getElementById('tab-operators').classList.remove('text-purple-400', 'border-purple-500');
+    });
+
+    document.getElementById('tab-products').addEventListener('click', () => {
+      document.getElementById('recording-section').classList.add('hidden');
+      document.getElementById('products-section').classList.remove('hidden');
+      document.getElementById('operators-section').classList.add('hidden');
+      document.getElementById('tab-recording').classList.add('text-slate-400', 'border-transparent');
+      document.getElementById('tab-recording').classList.remove('text-amber-400', 'border-amber-500');
+      document.getElementById('tab-products').classList.remove('text-slate-400', 'border-transparent');
+      document.getElementById('tab-products').classList.add('text-blue-400', 'border-blue-500');
+      document.getElementById('tab-operators').classList.add('text-slate-400', 'border-transparent');
+      document.getElementById('tab-operators').classList.remove('text-purple-400', 'border-purple-500');
+    });
+
+    document.getElementById('tab-operators').addEventListener('click', () => {
+      document.getElementById('recording-section').classList.add('hidden');
+      document.getElementById('products-section').classList.add('hidden');
+      document.getElementById('operators-section').classList.remove('hidden');
+      document.getElementById('tab-recording').classList.add('text-slate-400', 'border-transparent');
+      document.getElementById('tab-recording').classList.remove('text-amber-400', 'border-amber-500');
+      document.getElementById('tab-products').classList.add('text-slate-400', 'border-transparent');
+      document.getElementById('tab-products').classList.remove('text-blue-400', 'border-blue-500');
+      document.getElementById('tab-operators').classList.remove('text-slate-400', 'border-transparent');
+      document.getElementById('tab-operators').classList.add('text-purple-400', 'border-purple-500');
+    });
+
+    // Heating Timer Functions
+    function startHeating() {
+      if (heatingStartTime === null) {
+        heatingStartTime = new Date();
+        document.getElementById('start-time-display').textContent = heatingStartTime.toLocaleTimeString('ja-JP');
+        document.getElementById('start-btn').disabled = true;
+        document.getElementById('end-btn').disabled = false;
+        startElapsedTimer();
+      }
+    }
+
+    function endHeating() {
+      if (heatingStartTime !== null) {
+        heatingEndTime = new Date();
+        document.getElementById('end-time-display').textContent = heatingEndTime.toLocaleTimeString('ja-JP');
+        const elapsedMinutes = Math.round((heatingEndTime - heatingStartTime) / 60000);
+        document.getElementById('actual-time').value = elapsedMinutes;
+        document.getElementById('end-btn').disabled = true;
+        if (timerInterval) clearInterval(timerInterval);
+      }
+    }
+
+    function resetHeatingTimer() {
+      heatingStartTime = null;
+      heatingEndTime = null;
+      document.getElementById('start-time-display').textContent = '--:--:--';
+      document.getElementById('end-time-display').textContent = '--:--:--';
+      document.getElementById('elapsed-time-display').textContent = '0    0秒';
+      document.getElementById('start-btn').disabled = false;
+      document.getElementById('end-btn').disabled = true;
+      if (timerInterval) clearInterval(timerInterval);
+    }
+
+    function startElapsedTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (heatingStartTime) {
+          const now = new Date();
+          const diffMs = now - heatingStartTime;
+          const minutes = Math.floor(diffMs / 60000);
+          const seconds = Math.floor((diffMs % 60000) / 1000);
+          document.getElementById('elapsed-time-display').textContent = `${minutes}分 ${seconds}秒`;
+        }
+      }, 1000);
+    }
+
+    // Product Functions
+    function updateProductSelect() {
+      const select = document.getElementById('product-select');
+      const currentValue = select.value;
+      select.innerHTML = '<option value="">製品を選択してください</option>';
+      products.forEach(product => {
+        const option = document.createElement('option');
+        option.value = product.id;
+        option.textContent = product.name;
+        select.appendChild(option);
+      });
+      select.value = currentValue;
+    }
+
+    function updateOperatorSelect() {
+      const select = document.getElementById('operator-select');
+      const currentValue = select.value;
+      select.innerHTML = '<option value="">   当者を選択してください</option>';
+      operators.forEach(operator => {
+        const option = document.createElement('option');
+        option.value = operator.id;
+        option.textContent = operator.name;
+        select.appendChild(option);
+      });
+      select.value = currentValue;
+    }
+
+    document.getElementById('product-select').addEventListener('change', () => {
+      const productId = document.getElementById('product-select').value;
+      const product = products.find(p => p.id === productId);
+      if (product) {
+        document.getElementById('target-temp').value = product.targetTemp;
+        document.getElementById('target-time').value = product.targetTime;
+      } else {
+        document.getElementById('target-temp').value = '';
+        document.getElementById('target-time').value = '';
+      }
+    });
+
+    // Render Functions
+    function renderRecords() {
+      const container = document.getElementById('records-list');
+      const emptyState = document.getElementById('empty-state');
+      const count = document.getElementById('record-count');
+      
+      count.textContent = `${records.length}  `;
+      
+      if (records.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+        container.innerHTML = records.map((record, index) => {
+          const product = products.find(p => p.id === record.productId);
+          const tempPass = record.actualTemp >= product.targetTemp;
+          const timePass = record.actualTime >= product.targetTime;
+          const overallPass = tempPass && timePass;
+          
+          return `
+            <div class="bg-slate-700/50 rounded-lg p-4 border-l-4 ${overallPass ? 'border-green-500' : 'border-red-500'}">
+              <div class="flex items-start justify-between mb-3">
+                <div>
+                  <h3 class="font-semibold text-white">${product ? product.name : '不明'}</h3>
+                  <p class="text-xs text-slate-500 mt-1">製品ID: <span class="text-amber-400 font-mono">${product ? product.id : '-'}</span> |     料ID: <span class="text-blue-400 font-mono">${record.rawMaterialId}</span></p>
+                  <p class="text-sm text-slate-400">${record.timestamp} | ${record.operator}</p>
+                  <p class="text-xs text-slate-500 mt-1">パック数: <span class="text-white font-mono">${record.packCount}個</span> | 賞味期限: <span class="text-amber-300 font-mono">${record.expirationDate}</span></p>
+                </div>
+                <span class="px-3 py-1 rounded-full text-sm font-medium ${overallPass ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}">
+                  ${overallPass ? '合格' : '不合格'}
+                </span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-sm mb-3">
+                <div>
+                  <p class="text-slate-400">  度: <span class="text-white font-semibold">${record.actualTemp}℃</span> / ${product.targetTemp}℃</p>
+                  <p class="text-slate-400 text-xs mt-1">${tempPass ? '✓ 合格' : '✗ 不合格'}</p>
+                </div>
+                <div>
+                  <p class="text-slate-400">時間: <span class="text-white font-semibold">${record.actualTime}分</span> / ${product.targetTime}分</p>
+                  <p class="text-slate-400 text-xs mt-1">${timePass ? '✓ 合格' : '✗ 不合格'}</p>
+                </div>
+              </div>
+              <button onclick="deleteRecord(${index})" class="w-full px-3 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 text-sm rounded-lg transition-colors">削除</button>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function renderProducts() {
+      const container = document.getElementById('products-list');
+      const emptyState = document.getElementById('products-empty-state');
+      const count = document.getElementById('product-count');
+      
+      count.textContent = `${products.length}件`;
+      
+      if (products.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+        container.innerHTML = products.map((product, index) => `
+          <div class="bg-slate-700/50 rounded-lg p-4 flex items-start justify-between">
+            <div>
+              <h3 class="font-semibold text-white">${product.name}</h3>
+              <p class="text-sm text-slate-400 mt-1">基準温度: ${product.targetTemp}℃ | 基  時間: ${product.targetTime}分</p>
+            </div>
+            <button onclick="deleteProduct(${index})" class="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 text-sm rounded-lg transition-colors">削除</button>
+          </div>
+        `).join('');
+      }
+    }
+
+    function renderOperators() {
+      const container = document.getElementById('operators-list');
+      const emptyState = document.getElementById('operators-empty-state');
+      const count = document.getElementById('operator-count');
+      
+      count.textContent = `${operators.length}件`;
+      
+      if (operators.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+        container.innerHTML = operators.map((operator, index) => `
+          <div class="bg-slate-700/50 rounded-lg p-4 flex items-start justify-between">
+            <div>
+              <h3 class="font-semibold text-white">${operator.name}</h3>
+            </div>
+            <button onclick="deleteOperator(${index})" class="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 text-sm rounded-lg transition-colors">削除</button>
+          </div>
+        `).join('');
+      }
+    }
+
+    // Delete Functions
+    function deleteRecord(index) {
+      recordToDelete = index;
+      document.getElementById('delete-modal').classList.remove('hidden');
+      document.getElementById('delete-modal').classList.add('flex');
+    }
+
+    function deleteProduct(index) {
+      productToDelete = index;
+      document.getElementById('delete-product-modal').classList.remove('hidden');
+      document.getElementById('delete-product-modal').classList.add('flex');
+    }
+
+    function deleteOperator(index) {
+      operatorToDelete = index;
+      document.getElementById('delete-operator-modal').classList.remove('hidden');
+      document.getElementById('delete-operator-modal').classList.add('flex');
+    }
+
+    document.getElementById('confirm-delete').addEventListener('click', () => {
+      if (recordToDelete !== null) {
+        records.splice(recordToDelete, 1);
+        saveRecords();
+        renderRecords();
+        recordToDelete = null;
+        document.getElementById('delete-modal').classList.add('hidden');
+        document.getElementById('delete-modal').classList.remove('flex');
+        showToast('記録を削除しました');
+      }
+    });
+
+    document.getElementById('cancel-delete').addEventListener('click', () => {
+      recordToDelete = null;
+      document.getElementById('delete-modal').classList.add('hidden');
+      document.getElementById('delete-modal').classList.remove('flex');
+    });
+
+    document.getElementById('confirm-delete-product').addEventListener('click', () => {
+      if (productToDelete !== null) {
+        products.splice(productToDelete, 1);
+        saveData();
+        renderProducts();
+        updateProductSelect();
+        productToDelete = null;
+        document.getElementById('delete-product-modal').classList.add('hidden');
+        document.getElementById('delete-product-modal').classList.remove('flex');
+        showToast('   品を削除しました');
+      }
+    });
+
+    document.getElementById('cancel-delete-product').addEventListener('click', () => {
+      productToDelete = null;
+      document.getElementById('delete-product-modal').classList.add('hidden');
+      document.getElementById('delete-product-modal').classList.remove('flex');
+    });
+
+    document.getElementById('confirm-delete-operator').addEventListener('click', () => {
+      if (operatorToDelete !== null) {
+        operators.splice(operatorToDelete, 1);
+        saveData();
+        renderOperators();
+        updateOperatorSelect();
+        operatorToDelete = null;
+        document.getElementById('delete-operator-modal').classList.add('hidden');
+        document.getElementById('delete-operator-modal').classList.remove('flex');
+        showToast('担当者を削除しました');
+      }
+    });
+
+    document.getElementById('cancel-delete-operator').addEventListener('click', () => {
+      operatorToDelete = null;
+      document.getElementById('delete-operator-modal').classList.add('hidden');
+      document.getElementById('delete-operator-modal').classList.remove('flex');
+    });
+
+    // Form Handlers
+    document.getElementById('record-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (isSubmitting) return;
+      
+      const productId = document.getElementById('product-select').value;
+      const operatorId = document.getElementById('operator-select').value;
+      const operatorObj = operators.find(op => op.id === operatorId);
+      const operatorName = operatorObj ? operatorObj.name : '';
+      const rawMaterialId = document.getElementById('raw-material-id').value.toUpperCase();
+      const packCount = parseInt(document.getElementById('pack-count').value);
+      const expirationDate = document.getElementById('expiration-date').value;
+      const actualTemp = parseFloat(document.getElementById('actual-temp').value);
+      const actualTime = parseInt(document.getElementById('actual-time').value);
+      
+      if (!productId || !operatorId || !rawMaterialId || isNaN(packCount) || !expirationDate || isNaN(actualTemp) || isNaN(actualTime)) {
+        showToast('すべての項目を入力してください', 'error');
+        return;
+      }
+      
+      // 原料IDの入力チェック（英数字のみ）
+      if (!/^[a-zA-Z0-9]+$/.test(rawMaterialId)) {
+        showToast('原料IDは英数字のみで入力してください', 'error');
+        return;
+      }
+      
+      isSubmitting = true;
+      document.getElementById('submit-btn').disabled = true;
+      
+      const now = new Date();
+      const timestamp = now.toLocaleString('ja-JP');
+      
+      const record = {
+        productId,
+        operator: operatorName,
+        rawMaterialId,
+        packCount,
+        expirationDate,
+        actualTemp,
+        actualTime,
+        timestamp
+      };
+      
+      records.push(record);
+      saveData();
+      renderRecords();
+      
+      document.getElementById('actual-temp').value = '';
+      document.getElementById('actual-time').value = '';
+      document.getElementById('raw-material-id').value = '';
+      document.getElementById('pack-count').value = '';
+      document.getElementById('expiration-date').value = '';
+      document.getElementById('product-select').value = '';
+      document.getElementById('operator-select').value = '';
+      document.getElementById('target-temp').value = '';
+      document.getElementById('target-time').value = '';
+      
+      isSubmitting = false;
+      document.getElementById('submit-btn').disabled = false;
+      
+      showToast('記録を保存しました');
+    });
+
+    document.getElementById('product-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('new-product-name').value;
+      const targetTemp = parseFloat(document.getElementById('new-target-temp').value);
+      const targetTime = parseInt(document.getElementById('new-target-time').value);
+      
+      if (!name || isNaN(targetTemp) || isNaN(targetTime)) {
+        showToast('すべての項目を入力してください', 'error');
+        return;
+      }
+      
+      // 製品ID採   ：PP01 + yyyymmdd + 連番
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const dateStr = `${year}${month}${day}`;
+      
+      // 本日登録された製品の数を   ウン  
+      const todayProducts = products.filter(p => {
+        return p.id && p.id.substring(4, 12) === dateStr;
+      });
+      const sequence = String(todayProducts.length + 1).padStart(3, '0');
+      
+      const productId = `PP01${dateStr}${sequence}`;
+      
+      const product = {
+        id: productId,
+        name: name.trim(),
+        targetTemp: targetTemp,
+        targetTime: targetTime
+      };
+      
+      products.push(product);
+      saveData();
+      renderProducts();
+      updateProductSelect();
+      
+      document.getElementById('new-product-name').value = '';
+      document.getElementById('new-target-temp').value = '75';
+      document.getElementById('new-target-time').value = '1';
+      
+      showToast('製品を登録しました');
+    });
+
+    document.getElementById('operator-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('new-operator-name').value;
+      
+      if (!name) {
+        showToast('担当者名を入力してください', 'error');
+        return;
+      }
+      
+      const operator = {
+        id: Date.now().toString(),
+        name
+      };
+      
+      operators.push(operator);
+      saveData();
+      renderOperators();
+      updateOperatorSelect();
+      
+      document.getElementById('new-operator-name').value = '';
+      
+      showToast('担当者を登録しました');
+    });
+
+    // Close modals when clicking outside
+    document.getElementById('delete-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('delete-modal')) {
+        document.getElementById('cancel-delete').click();
+      }
+    });
+
+    document.getElementById('delete-product-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('delete-product-modal')) {
+        document.getElementById('cancel-delete-product').click();
+      }
+    });
+
+    document.getElementById('delete-operator-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('delete-operator-modal')) {
+        document.getElementById('cancel-delete-operator').click();
+      }
+    });
+
+    document.getElementById('qr-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('qr-modal')) {
+        closeQRScanner();
+      }
+    });
+
+    document.getElementById('qr-scan-btn').addEventListener('click', openQRScanner);
+
+    // Initialize
+    loadData();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ca9753b007000f4',t:'MTc3MDUzNjIwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
